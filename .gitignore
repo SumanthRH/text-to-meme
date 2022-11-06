@@ -1,9 +1,5 @@
-meme_900k_cleaned_data.pkl
-meme_900k_cleaned_data_v2.pkl
-memes900k
-memes900k_qa
-GPT-3 PlayBook.ipynb
-GPT-3 PlayBook-Sumanth.ipynb
-GPT-3 PlayBook-Tim.ipynb
-GPT-3 PlayBook-Yash.ipynb
-gpt3_sandbox
+annotator/
+__pycache__
+.ipynb_checkpoints
+notebooks/.ipynb_checkpoints
+models/
