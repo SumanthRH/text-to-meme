@@ -2,6 +2,6 @@ annotator/
 __pycache__
 .ipynb_checkpoints
 notebooks/.ipynb_checkpoints
-models/
-!models/model_utils
+models/*
+!models/model_utils/
 .idea/
