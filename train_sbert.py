@@ -9,7 +9,7 @@ import pandas as pd
 import torch.nn as nn
 import torch
 import numpy as np
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from sentence_transformers import SentenceTransformer, LoggingHandler, losses, InputExample
 
 
@@ -23,8 +23,8 @@ folder.save_token(token)
 base_model = 'all-MiniLM-L6-v2'
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-num_epochs = 5
-model_save_path = './models/sentence_transformer_'+str(num_epochs)
+num_epochs = 20
+model_save_path = './models/sentence_transformer_roberta_'+str(num_epochs)
 
 with open('./data/training_label.pkl', 'rb') as f:
     labels = pickle.load(f)
@@ -50,10 +50,9 @@ df = pd.DataFrame(temp_arr, columns=['category', 'text'])
 
 # split dataset
 np.random.seed(42)
-df_train, df_val, df_test = np.split(df.sample(frac=1, random_state=42), 
-                                     [int(.8*len(df)), int(.9*len(df))])
+df_train, df_test = np.split(df.sample(frac=1, random_state=42), [int(.9*len(df))])
 
-print(len(df_train),len(df_val), len(df_test))
+print(len(df_train),len(df_test))
 
 class Dataset():
     def __init__(self, df):
@@ -80,7 +79,6 @@ class Dataset():
         return batch_texts, batch_y
 
 train_dataset = Dataset(df_train)
-val_dataset = Dataset(df_val)
 test_dataset = Dataset(df_test)
 
 class SentenceBertDataloader():
@@ -147,9 +145,8 @@ class SentenceBertDataloader():
         self.index+=1
         return self.collate_fn(X_final_batch)
     
-train_loader = SentenceBertDataloader(train_dataset, 32)
-val_loader = SentenceBertDataloader(val_dataset, 32)
-test_loader = SentenceBertDataloader(test_dataset, 32)
+train_loader = SentenceBertDataloader(train_dataset, 64)
+test_loader = SentenceBertDataloader(test_dataset, 64)
 
 model = SentenceTransformer(base_model, device=device)
 train_loss = losses.ContrastiveLoss(model=model)
