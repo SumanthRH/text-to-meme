@@ -20,11 +20,11 @@ api=HfApi()
 folder=HfFolder()
 api.set_access_token(token)
 folder.save_token(token)
-base_model = 'all-MiniLM-L6-v2'
+base_model = 'roberta-base'
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-num_epochs = 20
-model_save_path = './models/sentence_transformer_roberta_'+str(num_epochs)
+num_epochs = 10
+model_save_path = './models/sentence_transformer_roberta_30'
 
 with open('./data/training_label.pkl', 'rb') as f:
     labels = pickle.load(f)
@@ -148,7 +148,7 @@ class SentenceBertDataloader():
 train_loader = SentenceBertDataloader(train_dataset, 64)
 test_loader = SentenceBertDataloader(test_dataset, 64)
 
-model = SentenceTransformer(base_model, device=device)
+model = SentenceTransformer('./models/sentence_transformer_roberta_20', device=device)
 train_loss = losses.ContrastiveLoss(model=model)
 
-model.fit(train_objectives=[(train_loader, train_loss)],epochs=num_epochs, warmup_steps=100, output_path=model_save_path)
+model.fit(train_objectives=[(train_loader, train_loss)],epochs=num_epochs, output_path=model_save_path)

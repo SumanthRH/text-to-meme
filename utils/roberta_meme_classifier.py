@@ -27,7 +27,7 @@ class Classifier:
     def __init__(self, num_classes=75, model_name=None, k=3):
         self.default_classifier = "roberta-base-memes-900k-subset-75"
         self.model_name = model_name
-        self.k=3
+        self.k=k
         self.model = Meme_Classifier(num_classes)
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.tokenizer = AutoTokenizer.from_pretrained(pre_trained_model_checkpoint)
