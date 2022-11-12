@@ -4,3 +4,4 @@ __pycache__
 notebooks/.ipynb_checkpoints
 models/
 .idea/
+data/annotated_qa
