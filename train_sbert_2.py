@@ -4,26 +4,26 @@ sys.path.append('./')
 import math, statistics, time
 from collections import defaultdict
 import numpy as np
-from tqdm.autonotebook import tqdm as tqdm
 from datetime import datetime
 import pickle
 import pandas as pd
 import torch.nn as nn
 import torch
 import numpy as np
-from torch.utils.data import DataLoader
-from sentence_transformers import SentenceTransformer, LoggingHandler, losses, InputExample
+from tqdm import tqdm
 
+from sentence_transformers import SentenceTransformer, LoggingHandler, losses, InputExample
 from utils.dataset import Dataset
 from utils.sentence_bert_dataloader import SentenceBertDataloader
 
 base_model = 'roberta-base'
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-num_epochs = 10
-model_save_path = './models/sentence_transformer_roberta_30'
+num_epochs = 5
+num_classes = 24
+model_save_path = './models/sentence_transformer_num_classes_{}_num_epochs_{}'.format(num_classes, num_epochs)
 
-with open('./data/training_label.pkl', 'rb') as f:
+with open('./data/training_label_{}.pkl'.format(num_classes), 'rb') as f:
     labels = pickle.load(f)
     
 # load meme dataset
@@ -48,17 +48,17 @@ df = pd.DataFrame(temp_arr, columns=['category', 'text'])
 # split dataset
 np.random.seed(42)
 df_train, df_test = np.split(df.sample(frac=1, random_state=42), [int(.9*len(df))])
-print(len(df_train),len(df_test))
+print(len(df_train), len(df_test))
 
-# create dataset
+# create datasets
 train_dataset = Dataset(df_train, labels)
 test_dataset = Dataset(df_test, labels)
 
-# create dataloader
+# create dataloaders    
 train_loader = SentenceBertDataloader(train_dataset, 64)
 test_loader = SentenceBertDataloader(test_dataset, 64)
 
-model = SentenceTransformer('./models/sentence_transformer_roberta_20', device=device)
+model = SentenceTransformer(base_model, device=device)
 train_loss = losses.ContrastiveLoss(model=model)
 
 model.fit(train_objectives=[(train_loader, train_loss)],epochs=num_epochs, output_path=model_save_path)
