@@ -1,0 +1,833 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+<<<<<<< HEAD
+   "execution_count": 14,
+=======
+   "execution_count": 20,
+>>>>>>> refs/remotes/origin/master
+   "id": "470f1f65-5712-42a8-bcf0-2a560ee2baae",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# imports\n",
+    "import math, statistics, time\n",
+    "from collections import defaultdict\n",
+    "import numpy as np\n",
+    "from datetime import datetime\n",
+    "import pickle\n",
+    "import pandas as pd\n",
+    "import torch.nn as nn\n",
+    "import torch\n",
+    "import numpy as np\n",
+    "from torch.utils.data import DataLoader, Dataset\n",
+    "from sentence_transformers import SentenceTransformer, LoggingHandler, losses, InputExample\n",
+    "from tqdm import tqdm\n",
+    "\n",
+    "# HF token\n",
+    "token = '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'\n",
+    "from huggingface_hub import HfApi, HfFolder\n",
+    "api=HfApi()\n",
+    "folder=HfFolder()\n",
+    "api.set_access_token(token)\n",
+    "folder.save_token(token)\n",
+    "base_model = 'roberta-base'\n",
+<<<<<<< HEAD
+=======
+    "device = 'cuda' if torch.cuda.is_available() else 'cpu'\n",
+    "\n",
+    "num_epochs = 20\n",
+    "# model_save_path = '../models/sentence_transformer_'+str(num_epochs)\n",
+    "model_save_path = '../models/sentence_transformer_30'\n",
+>>>>>>> refs/remotes/origin/master
+    "\n",
+    "with open('../data/training_label.pkl', 'rb') as f:\n",
+    "    labels = pickle.load(f)"
+   ]
+  },
+  {
+   "cell_type": "code",
+<<<<<<< HEAD
+   "execution_count": 6,
+=======
+   "execution_count": 21,
+>>>>>>> refs/remotes/origin/master
+   "id": "a70fc2b4-f09d-4837-bc84-06e537f15bb2",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Keys in meme dict dataset: dict_keys(['label_uuid_dic', 'uuid_label_dic', 'uuid_caption_dic', 'uuid_image_path_dic', 'uuid_caption_cased_dic'])\n",
+      "Number of uuids: 300\n"
+     ]
+    }
+   ],
+   "source": [
+    "# load meme dataset\n",
+    "meme_dict = None\n",
+    "with open('../data/meme_900k_cleaned_data_v2.pkl', 'rb') as f:\n",
+    "    meme_dict = pickle.load(f)\n",
+    "print(\"Keys in meme dict dataset:\", meme_dict.keys())\n",
+    "print(\"Number of uuids:\", len(meme_dict['uuid_label_dic']))"
+   ]
+  },
+  {
+   "cell_type": "code",
+<<<<<<< HEAD
+   "execution_count": 7,
+=======
+   "execution_count": 22,
+>>>>>>> refs/remotes/origin/master
+   "id": "3cf16c42-aad7-4f3c-8bcd-f21947364fb8",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# utility functions\n",
+    "def clean_and_unify_caption(caption):\n",
+    "    return caption[0].strip()+'; '+caption[1].strip()"
+   ]
+  },
+  {
+   "cell_type": "code",
+<<<<<<< HEAD
+   "execution_count": 8,
+=======
+   "execution_count": 23,
+>>>>>>> refs/remotes/origin/master
+   "id": "2f7c563e-bdf0-4123-9b45-66697b758f25",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "202500 22500\n"
+     ]
+    }
+   ],
+   "source": [
+    "# create pandas dataframe\n",
+    "training_uuids = labels.keys()\n",
+    "temp_arr = []\n",
+    "for uuid in training_uuids:\n",
+    "    for caption in meme_dict['uuid_caption_dic'][uuid]:\n",
+    "        temp_arr.append([uuid, clean_and_unify_caption(caption)])\n",
+    "df = pd.DataFrame(temp_arr, columns=['category', 'text'])\n",
+    "\n",
+    "# split dataset\n",
+    "np.random.seed(42)\n",
+    "df_train, df_test = np.split(df.sample(frac=1, random_state=42), [int(.9*len(df))])\n",
+    "\n",
+    "print(len(df_train), len(df_test))"
+   ]
+  },
+  {
+<<<<<<< HEAD
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "f52f5c92-5336-409a-a4cd-9858046062a5",
+=======
+   "cell_type": "markdown",
+   "id": "321c6a26-bab0-4377-a727-54352700fd58",
+>>>>>>> refs/remotes/origin/master
+   "metadata": {},
+   "source": [
+    "## Creating DataLoader"
+   ]
+  },
+  {
+   "cell_type": "code",
+<<<<<<< HEAD
+   "execution_count": 10,
+=======
+   "execution_count": 11,
+>>>>>>> refs/remotes/origin/master
+   "id": "7cac8b42-b955-4fe7-a788-cd6d89018b6a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "class Dataset():\n",
+    "    def __init__(self, df):\n",
+    "        self.labels = [labels[label] for label in df['category']]\n",
+    "        self.texts = [text for text in df['text']]\n",
+    "    \n",
+    "    def __len__(self):\n",
+    "        return len(self.labels)\n",
+    "\n",
+    "    def classes(self):\n",
+    "        return self.labels\n",
+    "\n",
+    "    def get_batch_labels(self, idx):\n",
+    "        # Fetch a batch of labels\n",
+    "        return np.array(self.labels[idx])\n",
+    "\n",
+    "    def get_batch_texts(self, idx):\n",
+    "        # Fetch a batch of inputs\n",
+    "        return self.texts[idx]\n",
+    "\n",
+    "    def __getitem__(self, idx):\n",
+    "        batch_texts = self.get_batch_texts(idx)\n",
+    "        batch_y = self.get_batch_labels(idx)\n",
+    "        return batch_texts, batch_y"
+   ]
+  },
+  {
+   "cell_type": "code",
+<<<<<<< HEAD
+   "execution_count": 11,
+=======
+   "execution_count": 12,
+>>>>>>> refs/remotes/origin/master
+   "id": "7dd9eab1-4fc8-4b01-abb5-398810cb5951",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "train_dataset = Dataset(df_train)\n",
+    "# val_dataset = Dataset(df_val)\n",
+    "test_dataset = Dataset(df_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+<<<<<<< HEAD
+   "execution_count": 12,
+=======
+   "execution_count": 13,
+>>>>>>> refs/remotes/origin/master
+   "id": "fc3017fa-ea58-4b41-b88d-15236a5c1969",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "class SentenceBertDataloader():\n",
+    "    def __init__(self, dataset, batch_size):\n",
+    "        self.batch_size=batch_size\n",
+    "        self.labels = np.array(dataset.labels)\n",
+    "        self.texts = np.array(dataset.texts)\n",
+    "        self.num_data_points = len(self.labels)\n",
+    "        self.num_meme_keys = len(set(self.labels))\n",
+    "        self.datapoints_per_meme = self.num_data_points//self.num_meme_keys\n",
+    "        \n",
+    "        # create mapping from meme id to list of texts for sampling +ve/-ve examples\n",
+    "        self.meme_id_text_dic = defaultdict(list)\n",
+    "        for meme_id, text in tqdm(zip(self.labels, self.texts)):\n",
+    "            self.meme_id_text_dic[meme_id].append(text)\n",
+    "        \n",
+    "        self.index = 0\n",
+    "    \n",
+    "    def __len__(self):\n",
+    "        return int(len(self.labels)//self.batch_size)\n",
+    "    \n",
+    "    def samplePositives(self, true_label, true_text):\n",
+    "        count = 0\n",
+    "        positive_examples = []\n",
+    "        while count<2:\n",
+    "            random_text = np.random.choice(self.meme_id_text_dic[true_label])\n",
+    "            if random_text!=true_text:\n",
+    "                count+=1\n",
+    "                positive_examples.append(random_text)\n",
+    "        return positive_examples\n",
+    "    \n",
+    "    def sampleNegatives(self, true_label, true_text):\n",
+    "        count = 0\n",
+    "        negative_examples = []\n",
+    "        while count<2:\n",
+    "            random_meme_id = np.random.randint(0, self.num_meme_keys)\n",
+    "            random_text = np.random.choice(self.meme_id_text_dic[random_meme_id])\n",
+    "            if random_meme_id!=true_label and random_text!=true_text:\n",
+    "                count+=1\n",
+    "                negative_examples.append(random_text)\n",
+    "        return negative_examples\n",
+    "    \n",
+    "    def __iter__(self):\n",
+    "        return self\n",
+    "    \n",
+    "    def __next__(self):\n",
+    "        X = self.texts[self.index: self.index+self.batch_size]\n",
+    "        y = self.labels[self.index: self.index+self.batch_size]\n",
+    "        X_final_batch = []\n",
+    "        for i in range(0, len(X)):\n",
+    "            positive_examples = self.samplePositives(y[i], X[i])\n",
+    "            negative_examples = self.sampleNegatives(y[i], X[i])\n",
+    "            for example in positive_examples:\n",
+    "                X_final_batch.append(InputExample(texts=[X[i], example], label=1))\n",
+    "            for example in negative_examples:\n",
+    "                X_final_batch.append(InputExample(texts=[X[i], example], label=0))\n",
+    "        \n",
+    "        self.index+=self.batch_size\n",
+    "        return self.collate_fn(X_final_batch)"
+   ]
+  },
+  {
+   "cell_type": "code",
+<<<<<<< HEAD
+   "execution_count": 15,
+=======
+   "execution_count": 14,
+>>>>>>> refs/remotes/origin/master
+   "id": "5e1c16e0",
+   "metadata": {},
+   "outputs": [
+    {
+<<<<<<< HEAD
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "ba62c33961174b41ac6c5d0a0952c8ca",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "0it [00:00, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "59c3fff0aa544e7ea3fbaa61ae9b5d77",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "0it [00:00, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "221929a6cf5e409fb7ff78de335e8964",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "0it [00:00, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "from transformers import AutoTokenizer\n",
+    "tokenizer = AutoTokenizer.from_pretrained(base_model)\n",
+    "train_loader = SentenceBertDataloader(train_dataset, tokenizer, 32)\n",
+    "val_loader = SentenceBertDataloader(val_dataset, tokenizer, 32)\n",
+    "test_loader = SentenceBertDataloader(test_dataset, tokenizer, 32)"
+=======
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "202500it [00:00, 790801.18it/s]\n",
+      "22500it [00:00, 712046.84it/s]\n"
+     ]
+    }
+   ],
+   "source": [
+    "train_loader = SentenceBertDataloader(train_dataset, 32)\n",
+    "# val_loader = SentenceBertDataloader(val_dataset, 32)\n",
+    "test_loader = SentenceBertDataloader(test_dataset, 32)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "208d701f-3e2f-4041-8a83-55648f09a40e",
+   "metadata": {},
+   "source": [
+    "## Model Training"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "493fe83a-d70e-4c86-8beb-8543aac0d569",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model = SentenceTransformer('../models/sentence_transformer_roberta_20', device=device)\n",
+    "train_loss = losses.ContrastiveLoss(model=model)"
+>>>>>>> refs/remotes/origin/master
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+<<<<<<< HEAD
+   "id": "add93e38",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "e70142a7abeb45a5a0d37cc40e8833cb",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Downloading:   0%|          | 0.00/445 [00:00<?, ?B/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "3a7c29d9d2ff44f29e9881b6598fc012",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Downloading:   0%|          | 0.00/9.08k [00:00<?, ?B/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "4b24ab0c7cdc472ea3fc3c9cfb8e8b8f",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Downloading:   0%|          | 0.00/481 [00:00<?, ?B/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "9daf7b6afc2043dd94763d04d02abed0",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Downloading:   0%|          | 0.00/603k [00:00<?, ?B/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "95c40eacbf0e4197ac7227132524fc0d",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Downloading:   0%|          | 0.00/456k [00:00<?, ?B/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "f8a31b8d74b6496d8fff1cc3c54c7447",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Downloading:   0%|          | 0.00/499M [00:00<?, ?B/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "a78d8d168290450491ff5f477d2aa416",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Downloading:   0%|          | 0.00/501M [00:00<?, ?B/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "model = SentenceTransformer(base_model)\n",
+    "train_loss = losses.ContrastiveLoss(model=model)"
+=======
+   "id": "dc85f4af",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model.fit(train_objectives=[(train_loader, train_loss)],\n",
+    "                              epochs=num_epochs, \n",
+    "                              warmup_steps=100, \n",
+    "                              output_path=model_save_path)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c1d6f748-f179-45f4-8ce8-c37ed905958f",
+   "metadata": {},
+   "source": [
+    "## Analyzing Results"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "id": "91af875d-4efe-4cc8-87ca-ba81ea305098",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sentence_transformers.util import cos_sim\n",
+    "device = 'cuda' if torch.cuda.is_available() else 'cpu'\n",
+    "\n",
+    "def topKPrediction(k, model, sentences, true_labels, uuid_to_emb_dict):\n",
+    "    embeddings = model.encode(sentences)\n",
+    "    final_score = 0\n",
+    "    for i in range(len(sentences)):        \n",
+    "        scores = []\n",
+    "        for key, v in uuid_to_emb_dict.items():\n",
+    "            scores.append((cos_sim(embeddings[i], v), labels[key]))\n",
+    "        scores.sort(reverse=True)\n",
+    "        for _, l in scores[:k]:\n",
+    "            if l==true_labels[i]:\n",
+    "                final_score += 1\n",
+    "    return final_score"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "id": "5fd2d9cf-446f-4b3a-993d-754bcd1b4382",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def topKAccuracy(k, model, df_test, uuid_to_emb_dict):\n",
+    "    accuracy = 0\n",
+    "    texts = list(df_test.text)\n",
+    "    true_meme_ids = [labels[uuid] for uuid in list(df_test.category)]\n",
+    "    batch_size = 512\n",
+    "    for i in tqdm(range(0,len(texts), batch_size)):\n",
+    "        accuracy += topKPrediction(3, model, texts[i:i+batch_size], true_meme_ids[i:i+batch_size], uuid_to_emb_dict)\n",
+    "    return accuracy/len(texts)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "id": "e15c55a5-2f41-4808-892b-cbf8e21373a7",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def getCategoryEmbeddings(df_train, model):\n",
+    "    uuid_to_emb_dict = {}\n",
+    "    uuid_count_dict = defaultdict(int)\n",
+    "    batch_size = 512\n",
+    "    \n",
+    "    for i in tqdm(range(0, df_train.shape[0], batch_size)):\n",
+    "        texts = list(df_train.text[i:i+batch_size])\n",
+    "        uuids = list(df_train.category[i:i+batch_size])\n",
+    "        embeddings = model.encode(texts)\n",
+    "        for i, uuid in enumerate(uuids):\n",
+    "            uuid_count_dict[uuid]+=1\n",
+    "            if uuid in uuid_to_emb_dict:\n",
+    "                uuid_to_emb_dict[uuid]=uuid_to_emb_dict[uuid]+embeddings[i]\n",
+    "            else:\n",
+    "                uuid_to_emb_dict[uuid]=embeddings[i]\n",
+    "    \n",
+    "    for k, v in uuid_to_emb_dict.items():\n",
+    "        uuid_to_emb_dict[k] = uuid_to_emb_dict[k]/uuid_count_dict[k] \n",
+    "    \n",
+    "    return uuid_to_emb_dict"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a0d1c172-4c50-4f90-a56b-e4fa0f758a46",
+   "metadata": {},
+   "source": [
+    "### 1. Baseline model"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "id": "b6bbbe4b-0ac6-4f7d-900a-48644d353f54",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# load model\n",
+    "model = SentenceTransformer('../models/roberta_base', device=device)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "id": "d3168358-f819-4433-84e1-3b9da91891ef",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "100%|██████████| 396/396 [02:18<00:00,  2.87it/s]\n"
+     ]
+    }
+   ],
+   "source": [
+    "# get category embeddings for model\n",
+    "category_embeddings = getCategoryEmbeddings(df_train, model)"
+>>>>>>> refs/remotes/origin/master
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "id": "82aaf5fa-7fc5-4f9c-9a00-88a57f1af00b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# with open('../models/model_utils//roberta_base/category_embeddings.pkl', 'wb') as f:\n",
+    "#     pickle.dump(category_embeddings, f)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "18b07547-140c-49e5-955a-49ee61f5757b",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "100%|██████████| 44/44 [03:50<00:00,  5.25s/it]\n"
+     ]
+    }
+   ],
+   "source": [
+    "# get top k accuracy\n",
+    "accuracy = topKAccuracy(3, model, df_test, category_embeddings)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "605c64bb-00e1-44ba-bc89-c9888f770f23",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.4806666666666667\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(accuracy)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "42dc25cc-5775-483b-b5d4-43a93b2ea37d",
+   "metadata": {},
+   "source": [
+    "### 2. MLI V6 5 epochs"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 39,
+   "id": "e34870a5-a900-4363-8143-87fb2fb1e954",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# load model\n",
+    "model_mli_5 = SentenceTransformer('../models/sentence_transformer_5/', device=device)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "id": "55cd5842-3926-4646-8419-4bb2ede06d7c",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "100%|██████████| 396/396 [01:24<00:00,  4.69it/s]\n"
+     ]
+    }
+   ],
+   "source": [
+    "category_embeddings_mli_5 = getCategoryEmbeddings(df_train, model_mli_5)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "id": "aaee3e2e-4fe6-4010-a88c-d721aaccd58d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# with open('../models/model_utils/sentence_transformer_5/category_embeddings.pkl', 'wb') as f:\n",
+    "#     pickle.dump(category_embeddings_mli_5, f)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "id": "b72e4f30-d80e-4da7-b048-a9a9759768ec",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "100%|██████████| 44/44 [03:42<00:00,  5.06s/it]\n"
+     ]
+    }
+   ],
+   "source": [
+    "accuracy_mli_5 = topKAccuracy(3, model_mli_5, df_test, category_embeddings_mli_5)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "id": "e36214dc-4787-402e-b962-d9f001572d14",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.6351555555555556\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(accuracy_mli_5)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a9ad3dbf-cf98-4a77-88db-e6d6ccca4fa8",
+   "metadata": {},
+   "source": [
+    "### 3. Roberta 20 epochs"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "id": "e149112e-96bd-4536-b039-6ce655b3e011",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# load model\n",
+    "model_roberta_20 = SentenceTransformer('../models/sentence_transformer_roberta_20/', device=device)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "id": "e9665b76-890c-49d3-a9a0-5de75b558034",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "100%|██████████| 396/396 [01:24<00:00,  4.68it/s]\n"
+     ]
+    }
+   ],
+   "source": [
+    "category_embeddings_roberta_20 = getCategoryEmbeddings(df_train, model_roberta_20)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "id": "181f0174-aedc-4057-91b1-79d7be42c72d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# with open('../models/model_utils/sentence_transformer_roberta_20/category_embeddings.pkl', 'wb') as f:\n",
+    "#     pickle.dump(category_embeddings_roberta_20, f)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "id": "1da5cf66-6535-4a1d-8563-c50c0bf82b7b",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "100%|██████████| 44/44 [03:41<00:00,  5.03s/it]\n"
+     ]
+    }
+   ],
+   "source": [
+    "accuracy_roberta_20 = topKAccuracy(3, model_roberta_20, df_test, category_embeddings_roberta_20)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "id": "680032dd-7b9d-4e3e-b8da-093f1636459b",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.6532444444444444\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(accuracy_roberta_20)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "meme",
+   "language": "python",
+   "name": "meme"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

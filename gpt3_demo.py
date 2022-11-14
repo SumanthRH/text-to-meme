@@ -9,25 +9,8 @@ import numpy as np
 
 
 
-def print_entities(tagger, sentence, span_str='np'):
-    sentence = Sentence(sentence)
-    tagger.predict(sentence)
-    for entity in sentence.get_spans(span_str):
-        print(entity)
-        
-def transform_caption_to_phrases(tagger, caption):
-    sentence = Sentence(caption)
-    tagger.predict(sentence)
-    entities = []
-    for entity in sentence.get_spans('np'):
-#         import pdb; pdb.set_trace()
-        if entity.get_label('np').value in ['NP', 'VP']:
-            entities.append(entity.text)
-    return ';'.join(entities)
-
-
 def clean_and_unify_caption(caption):
-    return caption[0].strip()+', '+caption[1].strip()
+    return caption[0].strip()+'<sep>'+caption[1].strip()
 
 def read_data(file_path):
     # load data
@@ -41,19 +24,17 @@ class PrimeGPT(object):
         set_openai_key(api_key)
         self.gpt = GPT(engine=gpt3_engine, temperature=temperature, max_tokens=max_tokens)
         self.gpt3_data = read_data(gpt3_data_path)
-        self.tagger = SequenceTagger.load("flair/chunk-english")
         
     def clear_gpt_examples(self):
         self.gpt.examples = {}
     
     def prime_gpt_from_uuid(self, uuid):
         self.clear_gpt_examples()
-        transformed_captions = self.gpt3_data['uuid_trans_caption_dic'][uuid]
-        captions = self.gpt3_data['uuid_caption_dic'][uuid]
-        for (transformed_caption, caption) in zip(transformed_captions, captions):
-            self.gpt.add_example(Example(transformed_caption, caption))
+        tuples = self.gpt3_data[uuid]
+        for (user_prompt, meme_caption) in tuples:
+            meme_caption = clean_and_unify_caption(meme_caption)
+            self.gpt.add_example(Example(user_prompt, meme_caption))
     
-    def get_response(self, uuid, caption):
+    def get_response(self, uuid, prompt):
         self.prime_gpt_from_uuid(uuid)
-        prompt = transform_caption_to_phrases(self.tagger, caption)
         return self.gpt.submit_request(prompt)

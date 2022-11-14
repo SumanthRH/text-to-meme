@@ -1,0 +1,19 @@
+Give a humourous, witty meme caption based on the input provided. The label of this meme is 'vengeance dad'
+
+input: My kids asked if gods exisited, and I helped them find the answer
+output: my kids asked if god was real<sep>i helped them find the answer
+
+input: My family is a treasure as they can be only found using a shovel and map.
+output: my family is a treasure<sep>they can only be found with a shovel and map
+
+input: They wanted to see skyrim so instead, I showed them oblivion.
+output: they wanted skyrim<sep>i showed them oblivion
+
+input: She didn't bring me a sandwich, so I didn't bring her to the hospital.
+output: she didn't bring me a sandwich<sep>i didn't bring her to the hospital
+
+input: They always made me feel unwanted, but now I am the most wanted.
+output: they made me feel unwanted<sep>now i'm most wanted
+
+input:Give me the gummy bears, and then you can leave
+output:
