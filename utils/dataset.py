@@ -1,7 +1,7 @@
 import numpy as np
 
 class Dataset():
-    def __init__(self, df):
+    def __init__(self, df, labels):
         self.labels = [labels[label] for label in df['category']]
         self.texts = [text for text in df['text']]
     
