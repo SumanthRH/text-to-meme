@@ -249,6 +249,7 @@ dependencies:
   - zipp=3.8.0=py37h06a4308_0
   - zlib=1.2.13=h166bdaf_4
   - zstd=1.5.2=h6239696_4
+  - pip=22.3.1
   - pip:
     - altair==4.2.0
     - backports-zoneinfo==0.2.1
