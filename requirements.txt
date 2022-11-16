@@ -1,5 +1,5 @@
 -i https://download.pytorch.org/whl/cu116
-torch==
+torch
 numpy
 matplotlib
 torchvision
