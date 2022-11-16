@@ -1,0 +1,12 @@
+-i https://download.pytorch.org/whl/cu116
+torch
+torchvision
+flair
+openai
+transformers
+pillow
+streamlit
+sentence_transformers
+matplotlib
+numpy
+
