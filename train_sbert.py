@@ -20,10 +20,7 @@ from utils.sentence_bert_dataloader import SentenceBertDataloader
 base_model = 'roberta-base'
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-num_epochs = 10
-model_save_path = './models/sentence_transformer_roberta_30'
-
-with open('./data/training_label.pkl', 'rb') as f:
+with open('./data/training_label_100.pkl', 'rb') as f:
     labels = pickle.load(f)
     
 # load meme dataset
@@ -58,7 +55,11 @@ test_dataset = Dataset(df_test, labels)
 train_loader = SentenceBertDataloader(train_dataset, 64)
 test_loader = SentenceBertDataloader(test_dataset, 64)
 
-model = SentenceTransformer('./models/sentence_transformer_roberta_20', device=device)
-train_loss = losses.ContrastiveLoss(model=model)
-
-model.fit(train_objectives=[(train_loader, train_loss)],epochs=num_epochs, output_path=model_save_path)
+curr_model = 'roberta-base'
+num_epochs = 5
+for i in range(1,6):
+    model_save_path = './models/sentence_transformer_roberta_samples_100_epochs_{}'.format(i*5)
+    model = SentenceTransformer(curr_model, device=device)
+    train_loss = losses.ContrastiveLoss(model=model)
+    model.fit(train_objectives=[(train_loader, train_loss)],epochs=num_epochs, output_path=model_save_path)
+    curr_model = model_save_path
