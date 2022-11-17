@@ -1,7 +1,3 @@
-import flair
-import transformers
-from flair.data import Sentence
-from flair.models import SequenceTagger
 import openai
 import pickle
 from gpt3_sandbox.api import *

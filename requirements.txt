@@ -1,0 +1,11 @@
+--extra-index-url https://download.pytorch.org/whl/cu116
+torch
+numpy
+matplotlib
+torchvision
+openai
+transformers
+pillow
+streamlit
+sentence_transformers
+flask
