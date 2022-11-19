@@ -9,11 +9,11 @@ from tqdm import tqdm
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 base_model_name = "roberta_base"
-models_path = '../models/{}'
-embeddings_path = '../models/model_utils/{}/category_embeddings.pkl'
+models_path = 'models/{}'
+embeddings_path = 'models/model_utils/{}/category_embeddings.pkl'
 
 class Classifier:
-    def __init__(self, labels_path='../data/training_label.pkl', model_name=None, k=3):
+    def __init__(self, labels_path='data/training_label.pkl', model_name=None, k=3):
         self.model_name = model_name if model_name else base_model_name
         self.model_path = models_path.format(self.model_name)
         self.embedding_path = embeddings_path.format(self.model_name)

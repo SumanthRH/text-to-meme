@@ -24,20 +24,28 @@ frequency_penalty=0.0
 presence_penalty=0.0
 DATA_PATH = "data/"
 
-def get_data_and_models():
+@st.experimental_singleton
+def get_data():
     with open("data/meme_900k_cleaned_data_v2.pkl", 'rb') as f:
         data = pickle.load(f)
-    model_name = 'sentence_transformer_roberta_20'
+    return data
+@st.experimental_singleton
+def get_clf():
+    model_name = 'sentence_transformer_roberta_samples_100_epochs_5'
     clf = Classifier(model_name=model_name, k=15)
-    gpt = PrimeGPT(your_personal_api_key, datapath, gpt3_engine, temperature, max_tokens)
-    return data, clf, gpt
+    return clf
+
 st.title("Jester")
 
-if "data" not in st.session_state:
-    data, clf, gpt = get_data_and_models()
-    st.session_state['data'] = data
-    st.session_state['clf'] = clf
+if "gpt" not in st.session_state:
+    gpt = PrimeGPT(your_personal_api_key, datapath, gpt3_engine, temperature, max_tokens)
     st.session_state['gpt'] = gpt
+
+if "data" not in st.session_state:
+    st.session_state['data'] = get_data()
+
+if "clf" not in st.session_state:
+    st.session_state['clf'] = get_clf()
 
 # =(1, 10, 1)
 def show_images():
@@ -68,7 +76,7 @@ if "paths" not in st.session_state:
 
 ind = st.session_state.image_ind
 st.image(st.session_state.img, caption=st.session_state.labels[ind-1].replace('-', " "))
-
+# st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
 # if not st.session_state.prompt_computed:
     # labels = [data['uuid_label_dic'][uuid] for uuid in uuids]
 
@@ -79,23 +87,25 @@ st.image(st.session_state.img, caption=st.session_state.labels[ind-1].replace('-
     # plt.show()
 
 # show_images(image_ind)
-# file_name = paths[images.value-1]
-# img = Image.open(os.path.join(DATA_PATH, file_name))
-# img = img.convert(mode="RGB")
 
-# uuid = uuids[images.value-1]
-# gpt.prime_gpt_from_uuid(uuid)
-# gpt_prompt = gpt.gpt.get_prime_text()
-# label = data['uuid_label_dic'][uuid].replace("-", " ")
-# prompt_begin = f"Give a humourous, witty meme caption based on the input provided. The label of this meme is '{label}'\n\n"
-# gpt_prompt = prompt_begin + gpt_prompt + "input:" + prompt +"\noutput:"
-# response = openai.Completion.create(
-#   engine="text-davinci-002",
-#   prompt=gpt_prompt,
-#   temperature=temperature,
-#   max_tokens=max_tokens,
-#   frequency_penalty=frequency_penalty,
-#   presence_penalty=presence_penalty
-# )
+if st.button("Generate Meme"):
+    file_name = st.session_state.paths[ind-1]
+    img = Image.open(os.path.join(DATA_PATH, file_name))
+    img = img.convert(mode="RGB")
+    uuid = st.session_state.uuids[ind-1]
+    st.session_state.gpt.prime_gpt_from_uuid(uuid)
+    gpt_prompt = st.session_state.gpt.gpt.get_prime_text()
+    label = st.session_state.data['uuid_label_dic'][uuid].replace("-", " ")
+    prompt_begin = f"Give a humourous, witty meme caption based on the input provided. The label of this meme is '{label}'\n\n"
+    gpt_prompt = prompt_begin + gpt_prompt + "input:" + prompt +"\noutput:"
+    response = openai.Completion.create(
+      engine="text-davinci-002",
+      prompt=gpt_prompt,
+      temperature=temperature,
+      max_tokens=max_tokens,
+      frequency_penalty=frequency_penalty,
+      presence_penalty=presence_penalty
+    )
 
-# draw_caption_and_display(img, response)
+    img = draw_caption_and_display(img, response, return_img=True)
+    st.image(img)
