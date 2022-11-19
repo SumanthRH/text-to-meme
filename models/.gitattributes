@@ -1,2 +1,0 @@
-sentence_transformer_5 filter=lfs diff=lfs merge=lfs -text
-sentence_transformer_roberta_20 filter=lfs diff=lfs merge=lfs -text

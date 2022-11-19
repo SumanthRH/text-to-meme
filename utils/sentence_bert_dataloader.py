@@ -13,6 +13,7 @@ class SentenceBertDataloader():
         self.texts = np.array(dataset.texts)
         self.num_data_points = len(self.labels)
         self.num_meme_keys = len(set(self.labels))
+        self.meme_keys = list(set(self.labels))
         self.datapoints_per_meme = self.num_data_points//self.num_meme_keys
         
         # create mapping from meme id to list of texts for sampling +ve/-ve examples
@@ -39,7 +40,7 @@ class SentenceBertDataloader():
         count = 0
         negative_examples = []
         while count<2:
-            random_meme_id = np.random.randint(0, self.num_meme_keys)
+            random_meme_id = np.random.choice(self.meme_keys)
             random_text = np.random.choice(self.meme_id_text_dic[random_meme_id])
             if random_meme_id!=true_label and random_text!=true_text:
                 count+=1
