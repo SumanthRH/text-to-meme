@@ -35,7 +35,7 @@ class Classifier:
         self.num_classes = len(self.uuid_labels_dict)
             
     def predictTopK(self, text):
-        embedding = self.model.encode(text)        
+        embedding = self.model.encode(text)
         scores = [(cos_sim(embedding, v), key) for key, v in self.embeddings.items()]
         scores.sort(reverse=True)
         return [x[1] for x in scores[:self.k]]

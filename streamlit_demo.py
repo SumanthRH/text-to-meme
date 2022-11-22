@@ -13,16 +13,43 @@ from utils.draw_utils import draw_caption_and_display
 import streamlit as st
 
 datapath = "data/gpt3_user_prompt_dic.pkl"
-# TODO: Add a button for the API Key
-your_personal_api_key = "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"
 
 # constants
 gpt3_engine = 'text-davinci-002'
-temperature=0.8
+temperature=0.7
 max_tokens=256
 frequency_penalty=0.0
 presence_penalty=0.0
 DATA_PATH = "data/"
+
+
+footer="""<style>
+a:link , a:visited{
+color: #00BFF;
+background-color: transparent;
+text-decoration: underline;
+}
+
+a:hover,  a:active {
+color: red;
+background-color: transparent;
+text-decoration: underline;
+}
+
+.footer {
+position: fixed;
+left: 0;
+bottom: 0;
+width: 100%;
+background-color: #121212;
+color: #FFFFFF;
+text-align: center;
+}
+</style>
+<div class="footer">
+<p>Developed with ❤ by <a href="https://sumanthrh.com/" target="_blank">Sumanth Hegde</a>, <a href="https://yashsk.com/" target="_blank">Yash Khandelwal</a> and <a href="https://www.linkedin.com/in/wonsuk-jang-3b33a819a/" target="_blank">Wonsuk Jang</a></p>
+</div>
+"""
 
 @st.experimental_singleton
 def get_data():
@@ -32,22 +59,10 @@ def get_data():
 @st.experimental_singleton
 def get_clf():
     model_name = 'sentence_transformer_roberta_samples_100_epochs_5'
+    # model_name = 'roberta_base'
     clf = Classifier(model_name=model_name, k=15)
     return clf
 
-st.title("Jester")
-
-if "gpt" not in st.session_state:
-    gpt = PrimeGPT(your_personal_api_key, datapath, gpt3_engine, temperature, max_tokens)
-    st.session_state['gpt'] = gpt
-
-if "data" not in st.session_state:
-    st.session_state['data'] = get_data()
-
-if "clf" not in st.session_state:
-    st.session_state['clf'] = get_clf()
-
-# =(1, 10, 1)
 def show_images():
     ind = st.session_state.image_ind
     file_name = st.session_state.paths[ind - 1]
@@ -57,6 +72,8 @@ def show_images():
 
 def get_templates():
     # initialize classifier
+    # if "image_ind" not in st.session_state:
+
     predictions = st.session_state.clf.predictTopK(text=st.session_state.prompt)
     paths = [st.session_state.data['uuid_image_path_dic'][uuid] for uuid in predictions]
     #     display(paths)
@@ -67,45 +84,57 @@ def get_templates():
     show_images()
     # return paths, predictions
 
+st.title("Jester")
+st.write("Welcome to Jester, a text-to-meme generation engine. Enter any prompt and you will get 10 relevant meme templates to select from. Pick a template, and click on 'Generate Meme' to get a meme. We use GPT-3 to generate captions, so please enter your API key below!")
 
-prompt = st.text_input("Prompt", "Why is the commercial not the same volume as the show uggh", on_change=get_templates, key="prompt")
-image_ind = st.slider(label="Template ID", min_value=1, max_value=10, step=1, on_change=show_images, key="image_ind")
+api_key = st.text_input("OpenAI API Key", type="password", key='api_key')
 
-if "paths" not in st.session_state:
-    get_templates()
+if len(api_key):
+    if "gpt" not in st.session_state:
+        gpt = PrimeGPT(st.session_state.api_key, datapath, gpt3_engine, temperature, max_tokens)
+        st.session_state['gpt'] = gpt
 
-ind = st.session_state.image_ind
-st.image(st.session_state.img, caption=st.session_state.labels[ind-1].replace('-', " "))
-# st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
-# if not st.session_state.prompt_computed:
-    # labels = [data['uuid_label_dic'][uuid] for uuid in uuids]
+    if "data" not in st.session_state:
+        st.session_state['data'] = get_data()
+
+    if "clf" not in st.session_state:
+        st.session_state['clf'] = get_clf()
 
 
-# @interact(k=kW, ind=images)
+    # "Why is the commercial not the same volume as the show uggh"
+    prompt = st.text_input("Prompt", on_change=get_templates, key="prompt")
+    image_ind = st.slider(label="Template ID", min_value=1, max_value=10, step=1, on_change=show_images,
+                          key="image_ind")
+    if len(prompt):
+        if "paths" not in st.session_state:
+            get_templates()
 
-    # plt.axis("off")
-    # plt.show()
+        ind = st.session_state.image_ind
+        st.image(st.session_state.img, caption=st.session_state.labels[ind-1].replace('-', " "))
+        # st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
 
-# show_images(image_ind)
+        if st.button("Generate Meme"):
+            file_name = st.session_state.paths[ind-1]
+            img = Image.open(os.path.join(DATA_PATH, file_name))
+            img = img.convert(mode="RGB")
+            uuid = st.session_state.uuids[ind-1]
+            st.session_state.gpt.prime_gpt_from_uuid(uuid)
+            gpt_prompt = st.session_state.gpt.gpt.get_prime_text()
+            label = st.session_state.data['uuid_label_dic'][uuid].replace("-", " ")
+            prompt_begin = f"Give a humourous, witty meme caption based on the input provided. The label of this meme is '{label}'\n\n"
+            gpt_prompt = prompt_begin + gpt_prompt + "input:" + prompt +"\noutput:"
+            with open("gpt_prompt.txt", 'w') as f:
+                f.write(gpt_prompt)
+            response = openai.Completion.create(
+              engine="text-davinci-002",
+              prompt=gpt_prompt,
+              temperature=temperature,
+              max_tokens=max_tokens,
+              frequency_penalty=frequency_penalty,
+              presence_penalty=presence_penalty
+            )
 
-if st.button("Generate Meme"):
-    file_name = st.session_state.paths[ind-1]
-    img = Image.open(os.path.join(DATA_PATH, file_name))
-    img = img.convert(mode="RGB")
-    uuid = st.session_state.uuids[ind-1]
-    st.session_state.gpt.prime_gpt_from_uuid(uuid)
-    gpt_prompt = st.session_state.gpt.gpt.get_prime_text()
-    label = st.session_state.data['uuid_label_dic'][uuid].replace("-", " ")
-    prompt_begin = f"Give a humourous, witty meme caption based on the input provided. The label of this meme is '{label}'\n\n"
-    gpt_prompt = prompt_begin + gpt_prompt + "input:" + prompt +"\noutput:"
-    response = openai.Completion.create(
-      engine="text-davinci-002",
-      prompt=gpt_prompt,
-      temperature=temperature,
-      max_tokens=max_tokens,
-      frequency_penalty=frequency_penalty,
-      presence_penalty=presence_penalty
-    )
+            img = draw_caption_and_display(img, response, return_img=True)
+            st.image(img)
 
-    img = draw_caption_and_display(img, response, return_img=True)
-    st.image(img)
+st.markdown(footer,unsafe_allow_html=True)
