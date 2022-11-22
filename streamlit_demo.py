@@ -102,16 +102,16 @@ if len(api_key):
 
 
     # "Why is the commercial not the same volume as the show uggh"
-    prompt = st.text_input("Prompt", on_change=get_templates, key="prompt")
-    image_ind = st.slider(label="Template ID", min_value=1, max_value=10, step=1, on_change=show_images,
+    prompt = st.text_input("Enter any text below 👇", on_change=get_templates, key="prompt")
+    image_ind = st.slider(label="Select your favourite template!", min_value=1, max_value=10, step=1, on_change=show_images,
                           key="image_ind")
     if len(prompt):
         if "paths" not in st.session_state:
             get_templates()
 
         ind = st.session_state.image_ind
-        st.image(st.session_state.img, caption=st.session_state.labels[ind-1].replace('-', " "))
-        # st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
+        # st.image(st.session_state.img, caption=st.session_state.labels[ind-1].replace('-', " "))
+        st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
 
         if st.button("Generate Meme"):
             file_name = st.session_state.paths[ind-1]
