@@ -11,7 +11,7 @@ import openai
 from PIL import Image, ImageOps, ImageFont, ImageDraw
 from utils.draw_utils import draw_caption_and_display
 import streamlit as st
-
+import base64
 datapath = "data/gpt3_user_prompt_dic.pkl"
 
 # constants
@@ -51,6 +51,41 @@ text-align: center;
 </div>
 """
 
+
+LOGO_IMAGE = "logo.png"
+
+st.markdown(
+    """
+    <style>
+    .container {
+        display: flex;
+    }
+    .logo-text {
+        font-weight:700 !important;
+        font-size:50px !important;
+        color: #f9a01b !important;
+    }
+    .logo-img {
+        float:right;
+        width: 70px;
+        height: 70px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+# padding-top: 75px !important;
+st.markdown(
+    f"""
+    <div class="container">
+        <img class="logo-img" src="data:image/png;base64,{base64.b64encode(open(LOGO_IMAGE, "rb").read()).decode()}">
+        <p class="logo-text"> &nbsp Jester</p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+# st.components.v1.html(html)
+
 @st.experimental_singleton
 def get_data():
     with open("data/meme_900k_cleaned_data_v2.pkl", 'rb') as f:
@@ -72,11 +107,8 @@ def show_images():
 
 def get_templates():
     # initialize classifier
-    # if "image_ind" not in st.session_state:
-
     predictions = st.session_state.clf.predictTopK(text=st.session_state.prompt)
     paths = [st.session_state.data['uuid_image_path_dic'][uuid] for uuid in predictions]
-    #     display(paths)
     st.session_state.paths = paths
     st.session_state.uuids = predictions
     st.session_state.labels = [st.session_state.data['uuid_label_dic'][uuid] for uuid in predictions]
@@ -84,22 +116,74 @@ def get_templates():
     show_images()
     # return paths, predictions
 
-st.title("Jester")
+# st.title("Jester")
 st.write("Welcome to Jester, a text-to-meme generation engine. Enter any prompt and you will get 10 relevant meme templates to select from. Pick a template, and click on 'Generate Meme' to get a meme. We use GPT-3 to generate captions, so please enter your API key below!")
 
-api_key = st.text_input("OpenAI API Key", type="password", key='api_key')
+if st.button("Click on Me for some examples!"):
+    st.markdown("Alright, here are 3 example prompts you can use:</br>"
+                "1. *Why is the commercial not the same volume as the show ugghh*</br>"
+                "2. *I forgot to turn the lights out before my trip!*</br>"
+                "3. *When you give me the gummy bears, you can leave*", unsafe_allow_html=True)
 
-if len(api_key):
-    if "gpt" not in st.session_state:
-        gpt = PrimeGPT(st.session_state.api_key, datapath, gpt3_engine, temperature, max_tokens)
-        st.session_state['gpt'] = gpt
+radio_vals = ["With GPT-3", "Without GPT-3"]
+gen_val = st.radio("Jester Mode", radio_vals)
+if gen_val == radio_vals[0]:
+    api_key = st.text_input("OpenAI API Key", type="password", key='api_key')
+    if len(api_key):
+        if "gpt" not in st.session_state:
+            gpt = PrimeGPT(st.session_state.api_key, datapath, gpt3_engine, temperature, max_tokens)
+            st.session_state['gpt'] = gpt
+
+        if "data" not in st.session_state:
+            st.session_state['data'] = get_data()
+
+        if "clf" not in st.session_state:
+            st.session_state['clf'] = get_clf()
+
+            # "Why is the commercial not the same volume as the show uggh"
+        prompt = st.text_input("Enter any text below 👇", on_change=get_templates, key="prompt")
+        image_ind = st.slider(label="Select your favourite template!", min_value=1, max_value=10, step=1,
+                              on_change=show_images,
+                              key="image_ind")
+        if len(prompt):
+            if "paths" not in st.session_state:
+                get_templates()
+
+            ind = st.session_state.image_ind
+            # st.image(st.session_state.img, caption=st.session_state.labels[ind - 1].replace('-', " "))
+            st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
+
+            if st.button("Generate Meme"):
+                file_name = st.session_state.paths[ind - 1]
+                img = Image.open(os.path.join(DATA_PATH, file_name))
+                img = img.convert(mode="RGB")
+                uuid = st.session_state.uuids[ind - 1]
+                st.session_state.gpt.prime_gpt_from_uuid(uuid)
+                gpt_prompt = st.session_state.gpt.gpt.get_prime_text()
+                label = st.session_state.data['uuid_label_dic'][uuid].replace("-", " ")
+                prompt_begin = f"Give a humourous, witty meme caption based on the input provided. The label of this meme is '{label}'\n\n"
+                gpt_prompt = prompt_begin + gpt_prompt + "input:" + prompt + "\noutput:"
+                with open("gpt_prompt.txt", 'w') as f:
+                    f.write(gpt_prompt)
+                response = openai.Completion.create(
+                    engine="text-davinci-002",
+                    prompt=gpt_prompt,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    frequency_penalty=frequency_penalty,
+                    presence_penalty=presence_penalty
+                )
+
+                img = draw_caption_and_display(img, response, return_img=True)
+                st.image(img)
+else:
+    st.write("Ok, so you won't get witty captions from GPT-3")
 
     if "data" not in st.session_state:
         st.session_state['data'] = get_data()
 
     if "clf" not in st.session_state:
         st.session_state['clf'] = get_clf()
-
 
     # "Why is the commercial not the same volume as the show uggh"
     prompt = st.text_input("Enter any text below 👇", on_change=get_templates, key="prompt")
@@ -110,31 +194,14 @@ if len(api_key):
             get_templates()
 
         ind = st.session_state.image_ind
-        st.image(st.session_state.img, caption=st.session_state.labels[ind-1].replace('-', " "))
-        # st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
-
+        # st.image(st.session_state.img, caption=st.session_state.labels[ind-1].replace('-', " "))
+        st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
+        file_name = st.session_state.paths[ind - 1]
+        img = Image.open(os.path.join(DATA_PATH, file_name))
         if st.button("Generate Meme"):
-            file_name = st.session_state.paths[ind-1]
-            img = Image.open(os.path.join(DATA_PATH, file_name))
             img = img.convert(mode="RGB")
-            uuid = st.session_state.uuids[ind-1]
-            st.session_state.gpt.prime_gpt_from_uuid(uuid)
-            gpt_prompt = st.session_state.gpt.gpt.get_prime_text()
-            label = st.session_state.data['uuid_label_dic'][uuid].replace("-", " ")
-            prompt_begin = f"Give a humourous, witty meme caption based on the input provided. The label of this meme is '{label}'\n\n"
-            gpt_prompt = prompt_begin + gpt_prompt + "input:" + prompt +"\noutput:"
-            with open("gpt_prompt.txt", 'w') as f:
-                f.write(gpt_prompt)
-            response = openai.Completion.create(
-              engine="text-davinci-002",
-              prompt=gpt_prompt,
-              temperature=temperature,
-              max_tokens=max_tokens,
-              frequency_penalty=frequency_penalty,
-              presence_penalty=presence_penalty
-            )
-
-            img = draw_caption_and_display(img, response, return_img=True)
+            img = draw_caption_and_display(img, response=prompt, return_img=True)
             st.image(img)
+
 
 st.markdown(footer,unsafe_allow_html=True)

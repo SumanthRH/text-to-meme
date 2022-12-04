@@ -70,7 +70,13 @@ def drawText(img, draw, font, text, pos):
 def draw_caption_and_display(img, response, return_img=False):
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("data/impact.ttf", 20)
-    captions = response['choices'][0]['text'].split("<sep>")
+    if type(response) == str:
+        words = response.split(" ")
+        caption1 = " ".join(words[:len(words)//2])
+        caption2 = " ".join(words[len(words)//2:])
+        captions = [caption1, caption2]
+    else:
+        captions = response['choices'][0]['text'].split("<sep>")
     if len(captions) == 2:
         drawText(img, draw, font, captions[1], "bottom")
         drawText(img, draw, font, captions[0], "top")
