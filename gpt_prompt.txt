@@ -1,0 +1,19 @@
+Give a humourous, witty meme caption based on the input provided. The label of this meme is 'evil raccoon'
+
+input: My brother giving me an evil look and looking at me like he will kill my cat if I want 
+output: if killing creature will cheer you up<sep>consider it done
+
+input: The announcer "Bobb" said that fans should not throw objects onto the ice, but I brought a fish to throw
+output: bobb: "fans, please do not throw objects onto the ice..."<sep>-brought a fish-
+
+input: Me grinning like an evil raccoon asking the host that I've heard she has great wine
+output: so...<sep>i hear you have great wine
+
+input: Laughing like a super villian and saying "and then I shall have my way with you!"
+output: and then i shall have my wicked way with you!<sep>mmmmwwwaaahhh!!
+
+input: I was lazy but my wife made coffee for me to gulp down
+output: you made coffee?<sep>excellent
+
+input:Give me the gummy bears, and then you can leave
+output:

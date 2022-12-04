@@ -2,7 +2,6 @@ annotator/
 __pycache__
 .ipynb_checkpoints
 notebooks/.ipynb_checkpoints
-!models/model_utils/
 .idea/
 data/annotated_qa
 data/outputs_sentence_transformer_roberta_20/
