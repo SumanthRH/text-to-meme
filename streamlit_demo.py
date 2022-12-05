@@ -150,8 +150,8 @@ if gen_val == radio_vals[0]:
                 get_templates()
 
             ind = st.session_state.image_ind
-            # st.image(st.session_state.img, caption=st.session_state.labels[ind - 1].replace('-', " "))
-            st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
+            st.image(st.session_state.img, caption=st.session_state.labels[ind - 1].replace('-', " "))
+            # st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
 
             if st.button("Generate Meme"):
                 file_name = st.session_state.paths[ind - 1]
@@ -194,8 +194,8 @@ else:
             get_templates()
 
         ind = st.session_state.image_ind
-        # st.image(st.session_state.img, caption=st.session_state.labels[ind-1].replace('-', " "))
-        st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
+        st.image(st.session_state.img, caption=st.session_state.labels[ind-1].replace('-', " "))
+        # st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
         file_name = st.session_state.paths[ind - 1]
         img = Image.open(os.path.join(DATA_PATH, file_name))
         if st.button("Generate Meme"):
