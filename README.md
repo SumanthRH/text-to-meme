@@ -57,11 +57,10 @@ The final embeddings for all trained models are all stored in /models folder. Th
 
 #### Demo
 The file /notebooks/Final Demo.ipynb is used for a notbeook demo. 
-
 The web demo is hosted on StreamLit Cloud.
 
 #### Utils
-The folder /utils consists of .py files critical to the proper functioning of the demo.
+The folder /utils consists of .py files critical to the proper functioning of the code.
 
 
 
