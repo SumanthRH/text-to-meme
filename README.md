@@ -46,6 +46,22 @@ in Table 2. For comparison, we decided to compare against the scores reported in
 <img width="396" alt="Screen Shot 2022-12-04 at 4 26 30 PM" src="https://user-images.githubusercontent.com/18485647/205525205-c3b69a60-eb23-4735-bfce-8c6fc77b0004.png">
 
 ### About this Repo
+#### Data
+The folder /data consists of the data that was used to train the SRoBERTa model. More specifically, the file /data/meme_900k_cleaned_data_v2.pkl has the cleaned up and pre-processed data. The code used for preprocessing the data in given in /notebooks/data_cleanup.ipynb.
+
+#### Training
+The files /notebooks/transformer_training.ipynb and /notebooks/sentencebert-finetuning.ipynb contain the code for finetuning of a vanilla RoBERTa based
+classifier model and the more sophisticated Contrastive Loss based SRoBERTa model respectively.
+
+The final embeddings for all trained models are all stored in /models folder. The actual models themselves are stored in <a href='https://drive.google.com/drive/folders/1LEVAC8kR7-QLMBQsDvwkOVuwpXvp3G4X?usp=share_link'>Google Drive</a>.
+
+#### Demo
+The file /notebooks/Final Demo.ipynb is used for a notbeook demo. 
+
+The web demo is hosted on StreamLit Cloud.
+
+#### Utils
+The folder /utils consists of .py files critical to the proper functioning of the demo.
 
 
 
