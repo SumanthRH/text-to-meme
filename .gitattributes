@@ -1,4 +1,1 @@
-models/sentence_transformer_5/** filter=lfs diff=lfs merge=lfs -text
-models/sentence_transformer_roberta_20/** filter=lfs diff=lfs merge=lfs -text
-models/sentence_transformer_*/** filter=lfs diff=lfs merge=lfs -text
 models/sentence_transformer_roberta_samples_100_epochs_5/** filter=lfs diff=lfs merge=lfs -text
