@@ -33,9 +33,20 @@ class Classifier:
         self.tokenizer = AutoTokenizer.from_pretrained(pre_trained_model_checkpoint)
 
         # load training labels and create reverse dict
-        with open('../data/training_label.pkl', 'rb') as f:
+        fname = "training_label_100_cleaned" if num_classes == 100 else "training_label"
+        with open(f'../data/{fname}.pkl', 'rb') as f:
             self.uuid_labels_dict = pickle.load(f)
             self.labels_uuid_dict = {v: k for k, v in self.uuid_labels_dict.items()}
+            
+        # check inputs
+        if not self.model_name:
+            self.model_name = self.default_classifier
+            print("Model not passed. Using default model: ", self.model_name)
+        self.MODEL_PATH = '../models/'+self.model_name
+        
+        # load state_dict
+        self.model.load_state_dict(torch.load(self.MODEL_PATH, map_location=torch.device(self.device)))
+        self.model.eval()
 
     def tokenizeAndFormat(self, text):
         tokenized = self.tokenizer(text,
@@ -47,26 +58,18 @@ class Classifier:
         return tokenized['input_ids'], tokenized['attention_mask']
 
     def findTopK(self, logits):
-        with torch.no_grad():
-            return [self.labels_uuid_dict[meme_id.item()] for meme_id in torch.topk(logits[0], self.k).indices]
+        return [self.labels_uuid_dict[meme_id.item()] for meme_id in torch.topk(logits[0], self.k).indices]
 
     def predictTopK(self, text=None):
-        # check inputs
-        if not self.model_name:
-            self.model_name = self.default_classifier
-            print("Model not passed. Using default model: ", self.model_name)
-        self.MODEL_PATH = '../models/'+self.model_name
 
         if not text:
             print("no text passed by user..exiting")
             exit()
 
-        # load state_dict
-        self.model.load_state_dict(torch.load(self.MODEL_PATH, map_location=torch.device(self.device)))
-
         # predict
         input_ids, mask = self.tokenizeAndFormat(text)
-        logits = self.model(input_ids, mask)
+        with torch.no_grad():
+            logits = self.model(input_ids, mask)
 
         # return top k entries
         return self.findTopK(logits)
