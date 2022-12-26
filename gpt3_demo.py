@@ -1,6 +1,6 @@
 import openai
 import pickle
-from gpt3_sandbox.api import *
+from utils.gpt import Example, GPT
 import numpy as np
 
 

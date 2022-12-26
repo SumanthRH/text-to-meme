@@ -1,5 +1,8 @@
 """Creates the Example and GPT classes for a user to interface with the OpenAI
-API."""
+API.
+
+Source: https://github.com/shreyashankar/gpt3-sandbox
+"""
 
 import openai
 import uuid
