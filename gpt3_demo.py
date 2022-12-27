@@ -1,3 +1,7 @@
+"""
+Creates a PrimeGPT class to interface with the OpenAI API.
+Helper functions borrowed from https://github.com/shreyashankar/gpt3-sandbox
+"""
 import openai
 import pickle
 from utils.gpt import Example, GPT
