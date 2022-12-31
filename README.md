@@ -33,7 +33,7 @@ We use the [Deep Humour](https://github.com/ilya16/deephumor) dataset. Due to li
 | `uuid_caption_dic` | UUID to List of Captions (for that template)|
 | `uuid_image_path_dic` | UUID to Template Image Path |
 
-#### Training [![Open in GitHub](https://img.shields.io/badge/_-Open_in_GitHub-blue.svg?logo=Jupyter&labelColor=5c5c5c)](notebooks/sentencebert-finetuning.ipynb)
+### Training [![Open in GitHub](https://img.shields.io/badge/_-Open_in_GitHub-blue.svg?logo=Jupyter&labelColor=5c5c5c)](notebooks/sentencebert-finetuning.ipynb)
 
 If you wish the train the model yourselves, you can use the following notebooks:
 * `notebooks/transformer_training.ipynb` : Finetuning a softmax-based vanilla RoBERTa model 
@@ -44,6 +44,13 @@ The final template embeddings are all stored in `pkl` files in `models/model_uti
 
 #### Notebook Demo [![Open in GitHub](https://img.shields.io/badge/_-Open_in_GitHub-blue.svg?logo=Jupyter&labelColor=5c5c5c)](notebooks/Final-Demo.ipynb)
 For some reason (Why??) if you wish to use a notebook demo instead of the [web demo](https://the-jester.streamlit.app/), that's available at `notebooks/Final-Demo.ipynb`. 
+
+### Sensitive content
+Memes push the boundaries of what is comfortable. In every dataset we sought to use, including the [Deep Humour](https://github.com/ilya16/deephumor) dataset, there was a significant amount of hate speech in various forms. It was simply impossible for us to completely filter out these datasets. We've thus implemented some safeguards at two levels: 1) All the labelled examples we feed into GPT-3 has been carefully chosen to weed out sensitive content 2) We have implemented a check up-front to detect hate speech in user prompts using [hatesonar](https://github.com/Hironsan/HateSonar).
+
+### Terms of Use
+
+The model should not be used to spread messages/ ideas that in any way is unlawful, defamatory, obscene, or otherwise objectionable. 
 
 
 
