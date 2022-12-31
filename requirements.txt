@@ -1,6 +1,7 @@
 --extra-index-url https://download.pytorch.org/whl/cu116
 torch
 numpy
+scikit-learn==0.23.1
 matplotlib
 torchvision
 openai
@@ -9,5 +10,4 @@ pillow
 streamlit
 sentence_transformers
 flask
-sklearn
 hatesonar
