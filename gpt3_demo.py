@@ -7,8 +7,6 @@ import pickle
 from utils.gpt import Example, GPT
 import numpy as np
 
-
-
 def clean_and_unify_caption(caption):
     return caption[0].strip()+'<sep>'+caption[1].strip()
 
@@ -18,6 +16,9 @@ def read_data(file_path):
         gpt3_data = pickle.load(f)
     return gpt3_data
 
+def set_openai_key(key):
+    """Sets OpenAI key."""
+    openai.api_key = key
 
 class PrimeGPT(object):
     def __init__(self, api_key, gpt3_data_path, gpt3_engine, temperature, max_tokens):

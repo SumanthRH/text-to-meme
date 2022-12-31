@@ -12,6 +12,11 @@ from PIL import Image, ImageOps, ImageFont, ImageDraw
 from utils.draw_utils import draw_caption_and_display
 import streamlit as st
 import base64
+from hatesonar import Sonar
+
+sonar = Sonar()
+get_warning = {"hate_speech": "Hate speech. Please see the Terms of Use", 
+"offensive_language": "Offensive language. User discretion advised"}
 datapath = "data/gpt3_user_prompt_dic.pkl"
 
 # constants
@@ -47,7 +52,8 @@ text-align: center;
 }
 </style>
 <div class="footer">
-<p>Developed with ❤ by <a href="https://sumanthrh.com/" target="_blank">Sumanth Hegde</a>, <a href="https://yashsk.com/" target="_blank">Yash Khandelwal</a> and <a href="https://www.linkedin.com/in/wonsuk-jang-3b33a819a/" target="_blank">Wonsuk Jang</a></p>
+<p>Developed with ❤ by <a href="https://sumanthrh.com/" target="_blank">Sumanth Hegde</a>, <a href="https://yashsk.com/" target="_blank">Yash Khandelwal</a> and <a href="https://www.linkedin.com/in/wonsuk-jang-3b33a819a/" target="_blank">Wonsuk Jang</a></br>
+<a href=https://github.com/SumanthRH/text-to-meme#terms-of-use>Terms of Use</a></p>
 </div>
 """
 
@@ -120,13 +126,16 @@ def get_templates():
 st.write("Welcome to Jester, a text-to-meme generation engine. Enter any prompt and you will get 10 relevant meme templates to select from. Pick a template, and click on 'Generate Meme' to get a meme. We use GPT-3 to generate captions, so please enter your API key below!")
 
 if st.button("Click on Me for some examples!"):
-    st.markdown("Alright, here are 3 example prompts you can use:</br>"
+    st.markdown("Alright, here are some example prompts you can use:</br>"
                 "1. *Why is the commercial not the same volume as the show ugghh*</br>"
                 "2. *I forgot to turn the lights out before my trip!*</br>"
-                "3. *When you give me the gummy bears, you can leave*", unsafe_allow_html=True)
+                "3. *When you give me the gummy bears, you can leave*</br>"
+                "4. *This is Spartaa*", unsafe_allow_html=True)
 
+# Setup radio buttons
 radio_vals = ["With GPT-3", "Without GPT-3"]
 gen_val = st.radio("Jester Mode", radio_vals)
+
 if gen_val == radio_vals[0]:
     api_key = st.text_input("OpenAI API Key", type="password", key='api_key')
     if len(api_key):
@@ -173,9 +182,14 @@ if gen_val == radio_vals[0]:
                     frequency_penalty=frequency_penalty,
                     presence_penalty=presence_penalty
                 )
+                sonar_ret = sonar.ping(text=prompt)
+                warning_class = sonar_ret['top_class']
+                img_caption = None
+                if warning_class in get_warning:
+                    img_caption = f"Warning: {get_warning[warning_class]}"
 
                 img = draw_caption_and_display(img, response, return_img=True)
-                st.image(img)
+                st.image(img, caption=img_caption)
 else:
     st.write("Ok, so you won't get witty captions from GPT-3")
 
@@ -185,10 +199,10 @@ else:
     if "clf" not in st.session_state:
         st.session_state['clf'] = get_clf()
 
-    # "Why is the commercial not the same volume as the show uggh"
     prompt = st.text_input("Enter any text below 👇", on_change=get_templates, key="prompt")
     image_ind = st.slider(label="Select your favourite template!", min_value=1, max_value=10, step=1, on_change=show_images,
                           key="image_ind")
+    
     if len(prompt):
         if "paths" not in st.session_state:
             get_templates()
@@ -198,10 +212,15 @@ else:
         # st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
         file_name = st.session_state.paths[ind - 1]
         img = Image.open(os.path.join(DATA_PATH, file_name))
+        sonar_ret = sonar.ping(text=prompt)
+        warning_class = sonar_ret['top_class']
+        img_caption = None
+        if warning_class in get_warning:
+            img_caption = f"Warning: {get_warning[warning_class]}"
         if st.button("Generate Meme"):
             img = img.convert(mode="RGB")
             img = draw_caption_and_display(img, response=prompt, return_img=True)
-            st.image(img)
+            st.image(img, caption=img_caption)
 
 
 st.markdown(footer,unsafe_allow_html=True)
