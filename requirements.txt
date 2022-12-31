@@ -9,4 +9,5 @@ pillow
 streamlit
 sentence_transformers
 flask
+sklearn
 hatesonar
