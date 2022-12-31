@@ -9,3 +9,4 @@ pillow
 streamlit
 sentence_transformers
 flask
+hatesonar
