@@ -1,6 +1,6 @@
 --extra-index-url https://download.pytorch.org/whl/cu116
 torch
-numpy
+numpy==1.20.0
 scikit-learn==0.23.1
 matplotlib
 torchvision
