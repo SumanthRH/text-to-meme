@@ -1,4 +1,5 @@
 --extra-index-url https://download.pytorch.org/whl/cu116
+cython==0.29
 torch
 numpy==1.20.0
 scikit-learn==0.23.1
@@ -11,3 +12,4 @@ streamlit
 sentence_transformers
 flask
 hatesonar
+
