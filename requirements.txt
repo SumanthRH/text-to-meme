@@ -1,8 +1,8 @@
 --extra-index-url https://download.pytorch.org/whl/cu116
 cython==0.29
 torch==1.13.0
-numpy==0.23.1
-scikit-learn==1.2.0
+numpy==1.23.1
+scikit-learn==0.23.0
 matplotlib==3.6.1
 torchvision==0.14.0
 openai==0.24.0
