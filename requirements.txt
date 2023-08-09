@@ -1,15 +1,14 @@
 --extra-index-url https://download.pytorch.org/whl/cu116
 cython==0.29
-torch
-numpy==1.20.0
-scikit-learn==0.23.1
-matplotlib
-torchvision
-openai
+torch==1.13.0
+numpy==0.23.1
+scikit-learn==1.2.0
+matplotlib==3.6.1
+torchvision==0.14.0
+openai==0.24.0
 transformers==4.22.1
-pillow
-streamlit
-sentence_transformers
-flask
+pillow==9.3.0
+streamlit==1.14.0
+sentence_transformers==2.2.2
+flask==2.2.2
 hatesonar
-
