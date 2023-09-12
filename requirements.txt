@@ -1,6 +1,6 @@
 --extra-index-url https://download.pytorch.org/whl/cu116
 Cython==0.29.36
-scikit-learn==0.23.0 --no-build-isolation
+scikit-learn==0.23.0
 torch==1.13.0
 numpy==1.23.1
 matplotlib==3.6.1
