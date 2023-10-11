@@ -47,7 +47,9 @@ def drawText(img, draw, font: ImageFont.FreeTypeFont, text, pos):
             line = text[cut:nextCut].strip()
 
             # is line still fitting ?
-            w, h = draw.textsize(line, font)
+            l, t, r, b = font.getbbox(line) # measure the size the text will take
+            w = r - l
+            h = b - t
             if not isLast and w > img.width:
                 nextCut -= 1
                 while text[nextCut] != " ":
@@ -63,7 +65,9 @@ def drawText(img, draw, font: ImageFont.FreeTypeFont, text, pos):
         lastY = img.height - h * (lineCount+1) - 10
 
     for i in range(0, lineCount):
-        w, h = draw.textsize(lines[i], font)
+        l, t, r, b = font.getbbox(lines[i]) # measure the size the text will take
+        w = r - l
+        h = b - t
         x = img.width/2 - w/2
         y = lastY + h
         drawTextWithOutline(draw, font, lines[i], x, y)
