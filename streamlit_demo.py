@@ -12,11 +12,7 @@ from PIL import Image, ImageOps, ImageFont, ImageDraw
 from utils.draw_utils import draw_caption_and_display
 import streamlit as st
 import base64
-from hatesonar import Sonar
 
-sonar = Sonar()
-get_warning = {"hate_speech": "Hate speech. Please see the Terms of Use", 
-"offensive_language": "Offensive language. User discretion advised"}
 datapath = "data/gpt3_user_prompt_dic.pkl"
 
 # constants
@@ -92,12 +88,12 @@ st.markdown(
 )
 # st.components.v1.html(html)
 
-@st.experimental_singleton
+@st.cache_resource
 def get_data():
     with open("data/meme_900k_cleaned_data_v2.pkl", 'rb') as f:
         data = pickle.load(f)
     return data
-@st.experimental_singleton
+@st.cache_resource
 def get_clf():
     model_name = 'sentence_transformer_roberta_samples_100_epochs_5'
     # model_name = 'roberta_base'
@@ -182,12 +178,8 @@ if gen_val == radio_vals[0]:
                     frequency_penalty=frequency_penalty,
                     presence_penalty=presence_penalty
                 )
-                sonar_ret = sonar.ping(text=prompt)
-                warning_class = sonar_ret['top_class']
-                img_caption = None
-                if warning_class in get_warning:
-                    img_caption = f"Warning: {get_warning[warning_class]}"
 
+                img_caption = None
                 img = draw_caption_and_display(img, response, return_img=True)
                 st.image(img, caption=img_caption)
 else:
@@ -212,11 +204,9 @@ else:
         # st.image(st.session_state.img, caption=st.session_state.uuids[ind-1])
         file_name = st.session_state.paths[ind - 1]
         img = Image.open(os.path.join(DATA_PATH, file_name))
-        sonar_ret = sonar.ping(text=prompt)
-        warning_class = sonar_ret['top_class']
+        
         img_caption = None
-        if warning_class in get_warning:
-            img_caption = f"Warning: {get_warning[warning_class]}"
+        
         if st.button("Generate Meme"):
             img = img.convert(mode="RGB")
             img = draw_caption_and_display(img, response=prompt, return_img=True)
