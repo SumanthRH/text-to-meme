@@ -12,6 +12,8 @@ from PIL import Image, ImageOps, ImageFont, ImageDraw
 from utils.draw_utils import draw_caption_and_display
 import streamlit as st
 import base64
+import PIL
+st.write(PIL.__version__)
 
 datapath = "data/gpt3_user_prompt_dic.pkl"
 
