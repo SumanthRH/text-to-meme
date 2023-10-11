@@ -14,7 +14,7 @@ def drawTextWithOutline(draw, font, text, x, y):
 
 def drawText(img, draw, font, text, pos):
     text = text.upper()
-    w, h = draw.textsize(text, font) # measure the size the text will take
+    w, h = font.getsize(text) # measure the size the text will take
 
     lineCount = 1
     if w > img.width:
