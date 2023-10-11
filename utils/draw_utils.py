@@ -12,12 +12,12 @@ def drawTextWithOutline(draw, font, text, x, y):
     draw.text((x, y), text, (255,255,255), font=font)
     return
 
-def drawText(img, draw, font, text, pos):
+def drawText(img, draw, font: ImageFont.FreeTypeFont, text, pos):
     text = text.upper()
     l, t, r, b = font.getbbox(text) # measure the size the text will take
     w = r - l
     h = b - t
-    
+
     lineCount = 1
     if w > img.width:
         lineCount = int(round((w / img.width) + 1))
