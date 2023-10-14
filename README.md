@@ -46,7 +46,7 @@ The final template embeddings are all stored in `pkl` files in `models/model_uti
 For some reason (Why??) if you wish to use a notebook demo instead of the [web demo](https://the-jester.streamlit.app/), that's available at `notebooks/Final-Demo.ipynb`. 
 
 ### Sensitive content
-Memes push the boundaries of what is comfortable. In every dataset we sought to use, including the [Deep Humour](https://github.com/ilya16/deephumor) dataset, there was a significant amount of hate speech in various forms. It was simply impossible for us to completely filter out these datasets. We've thus implemented some safeguards at two levels: 1) All the labelled examples we feed into GPT-3 has been carefully chosen to weed out sensitive content 2) We have implemented a check up-front to detect hate speech in user prompts using [hatesonar](https://github.com/Hironsan/HateSonar).
+Memes push the boundaries of what is comfortable. In every dataset we sought to use, including the [Deep Humour](https://github.com/ilya16/deephumor) dataset, there was a significant amount of hate speech in various forms. It was simply impossible for us to completely filter out these datasets. All the labelled examples we feed into GPT-3 has been carefully chosen to weed out sensitive content. However, appropriate use of the application is still left to the user.
 
 ### Terms of Use
 
